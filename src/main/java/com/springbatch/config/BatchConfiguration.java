@@ -40,6 +40,10 @@ public class BatchConfiguration {
 			
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+				boolean isFailure = false;
+				if(isFailure) {
+					throw new Exception("Test Exception");
+				}
 				System.out.println("Step2 executed!");
 				return RepeatStatus.FINISHED;
 			}
@@ -61,10 +65,11 @@ public class BatchConfiguration {
 	@Bean
 	public Job firstJob() {
 		return this.jobBuilderFactory.get("job1")
-				.preventRestart()
 				.start(step1())
-				.next(step2())
-				.next(step3())
+					.on("COMPLETED").to(step2())
+				.from(step2())
+					.on("COMPLETED").to(step3())
+				.end()
 				.build();
 	}
 
