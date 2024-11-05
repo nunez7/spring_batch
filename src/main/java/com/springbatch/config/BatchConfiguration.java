@@ -6,6 +6,7 @@ import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.flow.JobExecutionDecider;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.springbatch.decider.MyJobExecutionDecider;
 import com.springbatch.listener.MyStepExecutionListener;
 
 @Configuration
@@ -28,6 +30,11 @@ public class BatchConfiguration {
 	@Bean
 	public StepExecutionListener myStepExecutionListener() {
 		return new MyStepExecutionListener();
+	}
+	
+	@Bean
+	public JobExecutionDecider decider() {
+		return new MyJobExecutionDecider();
 	}
 	
 	@Bean
@@ -86,11 +93,10 @@ public class BatchConfiguration {
 	public Job firstJob() {
 		return this.jobBuilderFactory.get("job1")
 				.start(step1())
-					.on("COMPLETED").to(step2())
-				.from(step2())
-					.on("TEST_STATUS").to(step3())
-				.from(step2())
-					.on("*").to(step4())
+					.on("COMPLETED").to(decider())
+						.on("TEST_STATUS").to(step2())
+					.from(decider())
+						.on("*").to(step3())
 				.end()
 				.build();
 	}
