@@ -40,7 +40,7 @@ public class BatchConfiguration {
 			
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-				boolean isFailure = false;
+				boolean isFailure = true;
 				if(isFailure) {
 					throw new Exception("Test Exception");
 				}
@@ -63,12 +63,26 @@ public class BatchConfiguration {
 	}
 	
 	@Bean
+	public Step step4() {
+		return this.stepBuilderFactory.get("step4").tasklet(new Tasklet() {
+			
+			@Override
+			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+				System.out.println("step4 executed!");
+				return RepeatStatus.FINISHED;
+			}
+		}).build();
+	}
+	
+	@Bean
 	public Job firstJob() {
 		return this.jobBuilderFactory.get("job1")
 				.start(step1())
 					.on("COMPLETED").to(step2())
 				.from(step2())
 					.on("COMPLETED").to(step3())
+				.from(step2())
+					.on("*").to(step4())
 				.end()
 				.build();
 	}
