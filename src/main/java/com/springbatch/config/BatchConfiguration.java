@@ -62,7 +62,7 @@ public class BatchConfiguration {
 				System.out.println("Step2 executed!");
 				return RepeatStatus.FINISHED;
 			}
-		}).listener(myStepExecutionListener()).build();
+		}).build();
 	}
 	
 	@Bean
